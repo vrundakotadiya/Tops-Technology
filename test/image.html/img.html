@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+         Image</title>
+    <!-- Include OpenSeadragon library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/openseadragon/2.4.2/openseadragon.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/openseadragon/2.4.2/openseadragon.min.css" />
+    <style>
+        /* Set the size of the viewer container */
+        #openseadragon {
+            width: 100%;
+            height: 600px; /* Adjust height as needed */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* Style for buttons */
+        button {
+            margin: 5px;
+        }
+
+        /* Style for range inputs */
+        input[type="range"] {
+            width: 100px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Viewer container -->
+    <div id="openseadragon"></div>
+
+    <!-- Buttons for zooming, panning, rotating, inverting, sharing, printing, and downloading -->
+    <div>
+        <button id="zoom-in">Zoom In</button>
+        <button id="zoom-out">Zoom Out</button>
+        <button id="home">Home</button>
+        <button id="rotate-left">Rotate Left</button>
+        <button id="rotate-right">Rotate Right</button>
+        <button id="invert">Invert</button>
+        <button id="toggle-magnifier">Toggle Magnifier</button>
+        <!-- <button id="share">Share</button> -->
+        <button id="print">Print Image</button> <!-- Print button -->
+        <button id="download">Download Image</button> <!-- Download button -->
+    </div>
+    <button id="share">Share</button>
+
+    <!-- Share options menu -->
+    <div id="shareOptions" class="share-options">
+        <a id="shareFacebook">Share on Facebook</a>
+        <a id="shareEmail">Share via Email</a>
+        <a id="shareTwitter">Share on Twitter</a>
+    </div>
+
+
+    <!-- Filters -->
+    <div>
+        <label for="brightness">Brightness:</label>
+        <input type="range" id="brightness" min="0" max="200" value="100">
+        <label for="contrast">Contrast:</label>
+        <input type="range" id="contrast" min="0" max="200" value="100">
+    </div>
+
+    
+    <script>
+        // Check if OpenSeadragon is properly loaded
+        if (typeof OpenSeadragon !== 'undefined') {
+            // Initialize OpenSeadragon viewer
+            var viewer = OpenSeadragon({
+                id: "openseadragon", // ID of the viewer container
+                prefixUrl: "https://cdnjs.cloudflare.com/ajax/libs/openseadragon/2.4.2/images/", // Path to icons
+                tileSources: {
+                    type: 'image',
+                    url: 'https://gp1.wpc.edgecastcdn.net/005107/Images/IMAGE_VIEWER/AUSTRALIA/DIRECTORIES_and_MEMBERSLISTS/A_Glance_at_Australia_in_1880/00000001.jpg?m4J1XahOsyEEnjaVgAho79E6Q6EPF0B_90YkTT5RVhRhlQuwYxPS8AXKMNyMhhg_7VJU8abl1sh_NFBI9YY9Nx_OevaAzH82ujcnZVDdJTULZQ'
+                },
+                preserveImageSizeOnResize: true,
+                showRotationControl: true,
+                magnifier: {
+                    size: 200, // Size of the magnifier
+                    enabled: false
+                }
+            });
+
+            var magnifierEnabled = false;
+
+            // Zoom buttons functionality
+            document.getElementById("zoom-in").addEventListener("click", function() {
+                viewer.viewport.zoomBy(1.2);
+                viewer.viewport.applyConstraints();
+            });
+
+            document.getElementById("zoom-out").addEventListener("click", function() {
+                viewer.viewport.zoomBy(0.8);
+                viewer.viewport.applyConstraints();
+            });
+
+            // Home button functionality
+            document.getElementById("home").addEventListener("click", function() {
+                viewer.viewport.goHome();
+            });
+
+            // Rotate buttons functionality
+            document.getElementById("rotate-left").addEventListener("click", function() {
+                viewer.viewport.setRotation(viewer.viewport.getRotation() - 90);
+            });
+
+            document.getElementById("rotate-right").addEventListener("click", function() {
+                viewer.viewport.setRotation(viewer.viewport.getRotation() + 90);
+            });
+
+            var invertEnabled = false;
+            var invertButton = document.getElementById("invert");
+
+            invertButton.addEventListener("click", function() {
+                invertEnabled = !invertEnabled;
+                if (invertEnabled) {
+                    viewer.container.firstElementChild.style.filter = `invert(100%)`;
+                } else {
+                    viewer.container.firstElementChild.style.filter = `none`;
+                }
+            });
+
+            // Toggle magnifier functionality
+            document.getElementById("toggle-magnifier").addEventListener("click", function() {
+                magnifierEnabled = !magnifierEnabled;
+                viewer.gestureSettingsMouse.clickToZoom = !magnifierEnabled;
+                viewer.gestureSettingsTouch.clickToZoom = !magnifierEnabled;
+                viewer.magnifier.enabled = magnifierEnabled;
+                viewer.setMagnifier(magnifierEnabled);
+            });
+
+             // Share button functionality
+             function toggleShareOptions() {
+            var optionsMenu = document.getElementById("shareOptions");
+            optionsMenu.style.display = (optionsMenu.style.display === "block") ? "none" : "block";
+        }
+
+        // Function to handle sharing on Facebook
+        function shareOnFacebook() {
+            var shareURL = encodeURIComponent(window.location.href);
+            var facebookShareURL = `https://www.facebook.com/sharer/sharer.php?u=${shareURL}`;
+            window.open(facebookShareURL, '_blank');
+        }
+
+        // Function to handle sharing via Email
+        function shareViaEmail() {
+            var shareTitle = encodeURIComponent(document.title);
+            var shareImage = encodeURIComponent("URL_TO_YOUR_IMAGE"); // Replace this with your image URL
+            var emailSubject = `Check out this image: ${shareTitle}`;
+            var emailBody = `I thought you might like this image: ${shareImage}`;
+            var emailURL = `mailto:?subject=${emailSubject}&body=${emailBody}`;
+            window.location.href = emailURL;
+        }
+
+        // Function to handle sharing on Twitter
+        function shareOnTwitter() {
+            var shareURL = encodeURIComponent(window.location.href);
+            var shareTitle = encodeURIComponent(document.title);
+            var twitterShareURL = `https://twitter.com/intent/tweet?url=${shareURL}&text=${shareTitle}`;
+            window.open(twitterShareURL, '_blank');
+        }
+
+        // Add event listener to the share button
+        document.getElementById("share").addEventListener("click", toggleShareOptions);
+
+        // Add event listeners to the share options
+        document.getElementById("shareFacebook").addEventListener("click", shareOnFacebook);
+        document.getElementById("shareEmail").addEventListener("click", shareViaEmail);
+        document.getElementById("shareTwitter").addEventListener("click", shareOnTwitter);
+            // Print button functionality
+            document.getElementById("print").addEventListener("click", function() {
+                var printWindow = window.open('', '_blank');
+                printWindow.document.write('<img src="' + viewer.world.getItemAt(0).source.url + '" style="max-width:100%;">');
+                printWindow.document.close();
+                printWindow.print();
+            });
+
+            // Download button functionality
+            document.getElementById("download").addEventListener("click", function() {
+                var downloadLink = document.createElement('a');
+                downloadLink.href = viewer.world.getItemAt(0).source.url;
+                downloadLink.download = 'image.jpg';
+                downloadLink.click();
+            });
+
+            // Brightness and contrast functionality
+            document.getElementById("brightness").addEventListener("input", function() {
+                var brightnessValue = this.value - 100; // Adjust range to -100 to 100
+                viewer.container.firstElementChild.style.filter = `brightness(${brightnessValue + 100}%)`;
+            });
+
+            document.getElementById("contrast").addEventListener("input", function() {
+                var contrastValue = this.value - 100; // Adjust range to -100 to 100
+                viewer.container.firstElementChild.style.filter = `contrast(${contrastValue + 100}%)`;
+            });
+
+        } else {
+            console.error("OpenSeadragon library not loaded.");
+        }
+    </script>
+</body>
+</html>
